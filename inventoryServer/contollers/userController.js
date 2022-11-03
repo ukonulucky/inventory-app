@@ -35,10 +35,10 @@ const register = async (req, res, next) => {
         if (!user) {
             res.status(401)
             const newUser = await userModel.create({
-                email, name, password,
+                email, name, password, bio, phone
             })
             if (newUser) {
-                const { _id, name, email, bio, photo } = newUser
+                const { _id, name, email, bio, photo, phone } = newUser
                 const token = generateToken(_id)
                 res.cookie("token", token, {
                     expiresIn: new Date(Date.now() + (1000 * 60 * 60 * 24)),
@@ -47,7 +47,7 @@ const register = async (req, res, next) => {
                     
                 })
                 res.status(200).json({
-                    _id, name, email, bio, photo
+                    _id, name, email, bio, photo, phone
                 })
        }
         }
@@ -118,6 +118,96 @@ const logout = async (req,res, next) => {
 const getUser = (req,res) => {
   res.send(req.body)
 }
+//updating user details
+const updateUser = async  (req,res,next) => {
+try {
+    console.log("code ran",req.body)
+    const { _id } = req.user
+    const { name, bio,photo, email } = req.body
+   
+    const user = await userModel.findOne({_id})
+    if (user) {
+        console.log(user)
+        user.email = user.email
+        user.name = name || user.name
+        user.bio = bio || user.bio
+        user.photo = photo || user.photo
+        console.log(user.password)
+        const updatedUser = await user.save()
+        if (updatedUser) {
+            console.log("code ran 2")
+            res.status(200).json({
+                name,
+                bio,
+                email,
+                photo: user.photo
+
+
+            })
+        } else {
+            res.status(500)
+            const error = new Error("user update failed")
+            next(error)
+        }
+    } else {
+        res.status(500)
+        const error = new Error("user not found")
+        next(error)
+    }
+    
+   
+} catch (error) {
+    res.status(500)
+    const error2 = new Error(error.message)
+    next(error2)
+}
+}
+
+const changePassword = async (req, res, next) => {
+    try {
+        const { oldPassword, newPassword} = req.body
+        const { _id } = req.user
+        const user = await userModel.findOne({ _id })
+    
+        if (user) {
+            console.log(user)
+            const { password: userPassword } = user
+            console.log(userPassword, oldPassword)
+            const passwordCorrect = bcrypt.compare(userPassword,oldPassword )
+            if (passwordCorrect) {
+                user.password = newPassword
+                const updatePassword = await user.save()
+                if (updatePassword) {
+                    res.status(200).json({
+                        message: "password set successfully"
+                    })
+                
+                } else {
+                    res.status(400)
+                    const error = new Error("failed to change password please retry")
+                    next(error)
+                    return
+                }
+            }else{
+                res.status(400)
+                const error = new Error("Please old password  does not match with any user")
+                next(error)
+                return   
+            }
+        } else {
+            res.status(400)
+            const error = new Error("user not Found")
+            next(error)
+            return
+        }
+    
+  } catch (error) {
+        res.status(500)
+        const newError = new Error(error.message)
+        next(newError)
+        return
+  }
+}
 
 
 
@@ -126,5 +216,7 @@ module.exports = {
     register,
     login,
     logout,
-    getUser
+    getUser,
+    updateUser,
+    changePassword
 }

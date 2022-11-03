@@ -8,16 +8,14 @@ const jwt = require("jsonwebtoken")
 
 const protectUser = async (req, res, next) => {
     try {
-        console.log(req.cookies)
         const { token } = req.cookies
         if (token) {
             const respo = await jwt.verify(token, process.env.JWT_SECRETE)
-            console.log(respo)
             if (respo) {
                 const { id } = respo
                 const user = await userModel.findOne({ id }).select("-password")
                 if (user) {
-                    req.body.user = user 
+                    req.user = user 
                     next()
                 }
                 else {

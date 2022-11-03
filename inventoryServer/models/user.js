@@ -17,8 +17,7 @@ const userSchema = mongoose.Schema({
     password: {
         type: String,
         required: [true, "Please password is required"],
-        minLength: [6, "password should have a minimum length of six characters"],
-        maxLength: [15, "password should not have a maximum length of 15 characted"],
+        minLength: [6, "password should have a minimum length of six characters"]
         
     },
     photo: {
@@ -35,7 +34,8 @@ const userSchema = mongoose.Schema({
 
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
-    return next()
+        next()
+       return 
     }
 
 // salting and hashing of password before save

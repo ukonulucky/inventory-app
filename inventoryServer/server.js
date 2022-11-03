@@ -20,9 +20,11 @@ app.use(cookieParser())
  
 const dbConnect = require("./config/dB/dBConfig")
 const errorHandler = require("./Middleware/errorhandler")
+const otherRouth = require("./Middleware/otherRouteHandler")
 app.use("/api/users",userRoute)
 
 const PORT = process.env.PORT 
+app.use(otherRouth)
 app.use(errorHandler)
 
 
