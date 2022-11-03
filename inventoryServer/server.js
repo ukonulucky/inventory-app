@@ -1,5 +1,6 @@
 const express = require("express")
 require("dotenv").config()
+const cookieParser = require("cookie-parser")
 
 
 const userRoute = require("./routes/userRoutes")
@@ -9,6 +10,7 @@ const app = express()
 
 //MIDDLER WARES
 app.use(express.json())
+app.use(cookieParser())
 
 
 //user middler ware

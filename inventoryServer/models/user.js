@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-
+const bycrypt = require("bcrypt")
 
 const userSchema = mongoose.Schema({
     name: {
@@ -33,6 +33,17 @@ const userSchema = mongoose.Schema({
     }
 }, { timestamps: true })
 
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) {
+    return next()
+    }
+
+// salting and hashing of password before save
+    const salt = await bycrypt.genSalt()
+    this.password = await bycrypt.hash(this.password, salt)
+    next()
+
+})
 
 const userModel = mongoose.model("user", userSchema)
 
