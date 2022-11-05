@@ -209,6 +209,24 @@ const changePassword = async (req, res, next) => {
   }
 }
 
+const isLoggedIn = (req, res, next) => {
+try {
+    const { token } = req.cookies
+    if (token) {
+        res.status(200).json({
+            message: true
+        })
+    } else {
+        res.status(200).json({
+            message: false
+        })
+    }
+} catch (error) {
+    const err = new Error(error.message)
+    next(err)
+}
+}
+
 
 module.exports = {
     register,
@@ -216,5 +234,6 @@ module.exports = {
     logout,
     getUser,
     updateUser,
-    changePassword
+    changePassword,
+    isLoggedIn
 }
