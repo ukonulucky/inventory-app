@@ -1,6 +1,10 @@
 const userModel = require("../models/user")
+const crypto = require("crypto")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
+const tokenModel = require("../models/token")
+const sendMail = require("../utils/sendEmail")
+ require("dotenv").config()
 
 
 const errorGenerator = (message) => {
@@ -222,11 +226,55 @@ try {
         })
     }
 } catch (error) {
+    res.status(400)
     const err = new Error(error.message)
     next(err)
 }
 }
 
+const forgotPassword = async(req, res, next) => {
+  try {
+      const { email } = req.body
+      const user = await userModel.findOne({ email })
+      console.log(user)
+      if (!user) {
+    res.status(404)
+    const err = new Error("email not found")
+    next(err)
+      }
+const token = crypto.randomBytes(30).toString("hex") + user._id
+      const hash = crypto.createHash("sha256").update(token).digest("hex")
+     // saving token to database
+   const newTokenModel = await tokenModel.create({
+          userId: user._id,
+          token: token,
+          createdAt: Date.now(),
+          expiresAt: Date.now() + (30 * 60 * 1000) // note the time is in milli seconds
+   })
+      if (newTokenModel) {
+          const tokenData = await newTokenModel.save()
+          console.log(tokenData)
+      }
+      // message to send to user
+      const resetUrl = `${process.env.FRONT_END}/resetpassword/${hash}`
+      const message = `
+     <p> Hello ${user.name}</p>
+     <p>Please use the reset link below to change your password</p>
+     <p>This reset link is only valid for a period of 30 minutes</p>
+     <a clicktracking=off href=${resetUrl}>${resetUrl}</a>
+     <p>Best Regards.... </p>
+      `
+      const sendTo = user.email
+      const sendFrom = process.env.EMAIL_USER
+      const subject = "Password Reset"
+    await sendMail(res,next, req, sendFrom, sendTo, message,subject)
+      
+  } catch (error) {
+    res.status(400)
+    const err = new Error(error.message)
+    next(err)
+  }
+}
 
 module.exports = {
     register,
@@ -235,5 +283,6 @@ module.exports = {
     getUser,
     updateUser,
     changePassword,
-    isLoggedIn
+    isLoggedIn,
+    forgotPassword
 }
