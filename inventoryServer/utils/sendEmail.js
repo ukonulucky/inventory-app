@@ -4,7 +4,8 @@ const nodemailer = require("nodemailer")
 
 const sendMail = (res,next, sendFrom, sendTo, message, replyTo, subject) => {
   
-
+    console.log(process.env.EMAIL_PASSWORD, process.env.EMAIL_USER)
+    
   // setting our transportter function for mail sending
     const transporter = nodemailer.createTransport('smtps://user%40gmail.com:pass@smtp.gmail.com',{
         host: process.env.EMAIL_HOST,
@@ -19,7 +20,6 @@ const sendMail = (res,next, sendFrom, sendTo, message, replyTo, subject) => {
         // }
       
     })
-
     // creating out options for mail sending
     const  options ={
         to: sendTo,
@@ -37,7 +37,7 @@ const sendMail = (res,next, sendFrom, sendTo, message, replyTo, subject) => {
             return
         } else {
             res.status(200).json({
-                message: "mail Sent Successfullt",
+                message: "mail Sent Successfull",
                 mailSent: true
             })
     }

@@ -22,7 +22,6 @@ const userSchema = mongoose.Schema({
     },
     photo: {
         type: String,
-        required:[true, "Please add a photo"],
         default:"https://cdn.pixabay.com/photo/2016/09/01/08/24/smiley-1635450_960_720.png"
     },
    bio:{
